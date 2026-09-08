@@ -16,8 +16,7 @@ export const register = async (req, res) => {
       return res.status(409).json({ message: "Email already in use" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashedPassword });
+    await User.create({ email: email.trim().toLowerCase(), password });
 
     res.status(201).json({ message: 'User created' });
   } catch (err) {
@@ -29,15 +28,14 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
-  console.log('Login attempt:', { email, password });
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordValid = await bcrypt.compare(password.trim(), user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
